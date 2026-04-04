@@ -17,7 +17,6 @@ public class Robot extends TimedRobot
 {
   private final XboxController driverXbox = new XboxController(0);
 
-  // Hood
   private final SparkMax hoodMotor = new SparkMax(15, MotorType.kBrushless);
   private final RelativeEncoder hoodEncoder = hoodMotor.getEncoder();
 
