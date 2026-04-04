@@ -2,9 +2,9 @@ package frc.robot;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -17,8 +17,13 @@ public class Robot extends TimedRobot
 {
   private final XboxController driverXbox = new XboxController(0);
 
+  // Hood
   private final SparkMax hoodMotor = new SparkMax(15, MotorType.kBrushless);
   private final RelativeEncoder hoodEncoder = hoodMotor.getEncoder();
+
+  // Shooter
+  private final SparkMax shooterMotor = new SparkMax(8, MotorType.kBrushless);
+  private final SparkMax feederMotor  = new SparkMax(9, MotorType.kBrushless);
 
   private boolean homed = false;
   private boolean homing = false;
@@ -36,15 +41,44 @@ public class Robot extends TimedRobot
   private static final double DEBOUNCE_SECONDS = 0.10;
   private static final double HOMING_TIMEOUT_SECONDS = 2.0;
 
+  // Shooter tuning
+  private static final double SHOOT_SPEED = 1.0;
+  private static final double FEED_SPEED  = 0.6;
+
   @Override
   public void robotInit()
   {
-    SparkMaxConfig config = new SparkMaxConfig();
-    config.idleMode(IdleMode.kBrake);
-    config.smartCurrentLimit(10);
+    // Hood config
+    SparkMaxConfig hoodConfig = new SparkMaxConfig();
+    hoodConfig.idleMode(IdleMode.kBrake);
+    hoodConfig.smartCurrentLimit(10);
 
     hoodMotor.configure(
-        config,
+        hoodConfig,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+
+    // Shooter motor config
+    SparkMaxConfig shooterConfig = new SparkMaxConfig();
+    shooterConfig
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(40)
+        .inverted(true);   // flip if needed
+
+    shooterMotor.configure(
+        shooterConfig,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+
+    // Feeder motor config
+    SparkMaxConfig feederConfig = new SparkMaxConfig();
+    feederConfig
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(40)
+        .inverted(false);  // flip if needed
+
+    feederMotor.configure(
+        feederConfig,
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
   }
@@ -53,8 +87,11 @@ public class Robot extends TimedRobot
   public void teleopPeriodic()
   {
     boolean a = driverXbox.getAButton();
+    boolean b = driverXbox.getBButton();
     boolean x = driverXbox.getXButton();
     boolean y = driverXbox.getYButton();
+
+    // hood movement
 
     // A button rising edge -> start homing
     if (a && !prevA)
@@ -117,10 +154,30 @@ public class Robot extends TimedRobot
       }
     }
 
+    // shooter to b, equal to configbindings in yagsl
+    // Equivalent to:
+    // b().whileTrue(shooterSubsystem.shoot()).onFalse(stopAll())
+
+    if (b)
+    {
+      shooterMotor.set(SHOOT_SPEED);
+      feederMotor.set(FEED_SPEED);
+    }
+    else
+    {
+      shooterMotor.stopMotor();
+      feederMotor.stopMotor();
+    }
+
+    // SmartDB
     SmartDashboard.putNumber("Hood Current", hoodMotor.getOutputCurrent());
     SmartDashboard.putNumber("Hood Position", hoodEncoder.getPosition());
     SmartDashboard.putBoolean("Hood Homing", homing);
     SmartDashboard.putBoolean("Hood Homed", homed);
+
+    SmartDashboard.putBoolean("Shooter B Pressed", b);
+    SmartDashboard.putNumber("Shooter Current", shooterMotor.getOutputCurrent());
+    SmartDashboard.putNumber("Feeder Current", feederMotor.getOutputCurrent());
   }
 
   private void startHoming()
