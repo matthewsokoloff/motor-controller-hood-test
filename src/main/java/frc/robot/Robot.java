@@ -29,12 +29,12 @@ public class Robot extends TimedRobot
   private boolean prevA = false;
 
   // Tune on the real robot
-  private static final double HOMING_POWER = -0.05;
-  private static final double MANUAL_POWER = 0.05;
-  private static final double CURRENT_THRESHOLD_AMPS = 5.0;
-  private static final double MIN_RUN_SECONDS = 0.20;
-  private static final double DEBOUNCE_SECONDS = 0.10;
-  private static final double HOMING_TIMEOUT_SECONDS = 2.0;
+  private static final double HOMING_POWER = -0.5;
+  private static final double MANUAL_POWER = 0.5;
+  private static final double CURRENT_THRESHOLD_AMPS = .2;
+  private static final double MIN_RUN_SECONDS = 0.1;
+  private static final double DEBOUNCE_SECONDS = 0.1;
+  private static final double HOMING_TIMEOUT_SECONDS = 7.0;
 
   @Override
   public void robotInit()
@@ -68,13 +68,13 @@ public class Robot extends TimedRobot
     {
       homing = false;
       homed = false;
-      hoodMotor.set(-MANUAL_POWER);
+      hoodMotor.set(MANUAL_POWER);
     }
     else if (y)
     {
       homing = false;
       homed = false;
-      hoodMotor.set(MANUAL_POWER);
+      hoodMotor.set(-MANUAL_POWER);
     }
     else if (!homing)
     {
@@ -83,7 +83,7 @@ public class Robot extends TimedRobot
 
     if (homing)
     {
-      hoodMotor.set(HOMING_POWER);
+      hoodMotor.set(-HOMING_POWER);
 
       boolean eligible = homingTimer.get() > MIN_RUN_SECONDS;
       boolean overCurrent = hoodMotor.getOutputCurrent() >= CURRENT_THRESHOLD_AMPS;
