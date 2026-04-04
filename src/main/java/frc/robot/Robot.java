@@ -17,12 +17,12 @@ public class Robot extends TimedRobot
 {
   private final XboxController driverXbox = new XboxController(0);
 
-  private final SparkMax hoodMotor = new SparkMax(15, MotorType.kBrushless);
+  private final SparkMax hoodMotor = new SparkMax(7, MotorType.kBrushed);
   private final RelativeEncoder hoodEncoder = hoodMotor.getEncoder();
 
   // Shooter
-  private final SparkMax shooterMotor = new SparkMax(8, MotorType.kBrushless);
-  private final SparkMax feederMotor  = new SparkMax(9, MotorType.kBrushless);
+  private final SparkMax shooterMotor = new SparkMax(10, MotorType.kBrushless);
+  private final SparkMax feederMotor  = new SparkMax(6, MotorType.kBrushless);
 
   private boolean homed = false;
   private boolean homing = false;
